@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Admin Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dash-body">
+  <nav class="portal-nav">
+    <a href="home.html">Home</a>
+    <a href="index.html" target="_blank">🎓 Student</a>
+    <a href="teacher.html" target="_blank">👨‍🏫 Teacher</a>
+    <a href="admin.html" class="active" target="_blank">🛡️ Admin</a>
+  </nav>
+
+  <header class="dash-header">
+    <div class="dash-brand">
+      <h1 class="brand">Online Exam Portal<span> with Anti-Cheating System</span></h1>
+      <span class="dash-role mono">ADMIN</span>
+    </div>
+    <div class="dash-user">
+      <span id="admin-name">—</span>
+      <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="dash-tabs" role="tablist">
+    <button type="button" class="dash-tab active" data-panel="locks">Locked Students</button>
+    <button type="button" class="dash-tab" data-panel="teachers">Teacher Approvals</button>
+    <button type="button" class="dash-tab" data-panel="attempts">All Attempts</button>
+    <button type="button" class="dash-tab" data-panel="exams">All Exams</button>
+    <button type="button" class="dash-tab" data-panel="users">User Directory</button>
+  </nav>
+
+  <main class="dash-main">
+    <section id="panel-locks" class="dash-panel active">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Auto-Locked Candidates & Violation Bans</h2>
+          <p>Students locked after violations with registered Gmail ID. Unlock allows exactly one fresh attempt for that exam.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-locks">Refresh ↻</button>
+      </div>
+      <div id="locks-list" class="dash-list"></div>
+    </section>
+
+    <section id="panel-teachers" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Teacher Approval Requests</h2>
+          <p>Approve or reject faculty signups before they can create questions and exams.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-teachers">Refresh ↻</button>
+      </div>
+      <div id="teachers-list" class="dash-list"></div>
+    </section>
+
+    <section id="panel-attempts" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Platform Attempts</h2>
+          <p>Scores and status across all exams. Expand a row for violation detail.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-attempts">Refresh ↻</button>
+      </div>
+      <div id="attempts-list" class="dash-list"></div>
+    </section>
+
+    <section id="panel-exams" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>All Exams</h2>
+          <p>Published and draft exams across every teacher.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-exams">Refresh ↻</button>
+      </div>
+      <div id="exams-list" class="dash-list"></div>
+    </section>
+
+    <section id="panel-users" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>User Directory</h2>
+          <p>Students, teachers, and admins registered on the platform organized in separate tabs.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btn-refresh-users">Refresh ↻</button>
+      </div>
+
+      <div class="user-subtabs-nav" style="display:flex; gap:8px; margin-bottom:1.25rem; border-bottom:1px solid var(--line); padding-bottom:8px; overflow-x:auto;">
+        <button type="button" class="user-subtab active" data-role="all">All Users (<span id="cnt-all">0</span>)</button>
+        <button type="button" class="user-subtab" data-role="student">🎓 Students (<span id="cnt-students">0</span>)</button>
+        <button type="button" class="user-subtab" data-role="teacher">👨‍🏫 Teachers (<span id="cnt-teachers">0</span>)</button>
+        <button type="button" class="user-subtab" data-role="admin">🛡️ Admins (<span id="cnt-admins">0</span>)</button>
+      </div>
+
+      <div id="users-list" class="dash-list"></div>
+    </section>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/admin.js"></script>
+</body>
+</html>

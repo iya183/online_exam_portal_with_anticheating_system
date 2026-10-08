@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Photo Verification</title>
+  <meta name="description" content="SecureTest photo verification. Upload or capture a live selfie to proceed to your exam.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <main class="verify-card">
+    <header class="verify-top">
+      <div>
+        <h1 class="brand" id="brand-title">Online Exam Portal<span> with Anti-Cheating System</span></h1>
+        <div class="tag">Photo Verification</div>
+      </div>
+      <div id="candidate-meta" style="text-align:right; font-size:11px; color:var(--gold-light);" class="mono">
+        LOADING...
+      </div>
+    </header>
+    <div class="perforation"></div>
+    <div class="verify-body">
+      <h2>Upload Your Photo</h2>
+      <p class="sub">Please capture or upload a clear photo of yourself. This photo will be used for proctoring during your examination.</p>
+
+      <div class="verify-grid" style="grid-template-columns: 1fr;">
+        <!-- Panel: Photo Upload -->
+        <section class="verify-panel" aria-labelledby="selfie-panel-title">
+          <div class="verify-panel-header">
+            <span id="selfie-panel-title">Your Photo</span>
+            <span class="status-badge pending" id="badge-selfie">Pending</span>
+          </div>
+          <div class="verify-media-box" id="container-selfie">
+            <video id="video-selfie" autoplay muted playsinline></video>
+            <img id="img-selfie" class="captured" style="display: none;" alt="Captured Photo">
+            <div class="media-placeholder" id="placeholder-selfie" style="display: none;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+              </svg>
+              <span>Camera feed unavailable</span>
+            </div>
+          </div>
+          <div class="verify-controls">
+            <div class="btn-row" id="controls-selfie-cam">
+              <button class="btn btn-primary" id="btn-selfie-capture">Capture Photo</button>
+              <button class="btn btn-ghost" id="btn-selfie-to-upload">Use File Upload</button>
+            </div>
+            <div class="btn-row" id="controls-selfie-upload" style="display: none;">
+              <button class="btn btn-primary" id="btn-selfie-select-file">Choose Photo File...</button>
+              <input type="file" id="input-selfie-file" accept="image/*">
+              <button class="btn btn-ghost" id="btn-selfie-to-cam">Use Camera</button>
+            </div>
+            <button class="btn btn-ghost btn-danger" id="btn-selfie-reset" style="display: none;">Retake / Reupload</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="field" style="margin-top: 24px;">
+        <label class="consent">
+          <input type="checkbox" id="inp-verify-confirm" disabled>
+          <span>This is my photo. I confirm my details are correct and visible.</span>
+        </label>
+      </div>
+
+      <button class="btn btn-primary" id="btn-verify-proceed" disabled>Proceed to Rules &amp; Consent →</button>
+    </div>
+  </main>
+
+  <canvas id="hidden-canvas" style="display: none;" width="640" height="480"></canvas>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/verify.js"></script>
+</body>
+</html>

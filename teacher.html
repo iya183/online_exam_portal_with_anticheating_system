@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Teacher Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="dash-body">
+  <nav class="portal-nav">
+    <a href="home.html">Home</a>
+    <a href="index.html" target="_blank">🎓 Student</a>
+    <a href="teacher.html" class="active" target="_blank">👨‍🏫 Teacher</a>
+    <a href="admin.html" target="_blank">🛡️ Admin</a>
+  </nav>
+
+  <header class="dash-header">
+    <div class="dash-brand">
+      <h1 class="brand">Online Exam Portal<span> with Anti-Cheating System</span></h1>
+      <span class="dash-role mono">FACULTY</span>
+    </div>
+    <div class="dash-user">
+      <span id="teacher-name">—</span>
+      <button type="button" class="btn btn-ghost btn-sm" id="btn-logout">Sign out</button>
+    </div>
+  </header>
+
+  <nav class="dash-tabs" role="tablist">
+    <button type="button" class="dash-tab active" data-panel="students">Student Management</button>
+    <button type="button" class="dash-tab" data-panel="banned" id="tab-banned">🚫 Banned Students</button>
+    <button type="button" class="dash-tab" data-panel="bank">Question Bank</button>
+    <button type="button" class="dash-tab" data-panel="exams">Exams</button>
+    <button type="button" class="dash-tab" data-panel="results">Results</button>
+  </nav>
+
+  <main class="dash-main">
+    <!-- STUDENT MANAGEMENT -->
+    <section id="panel-students" class="dash-panel active">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Student Management</h2>
+          <p>Review registered students, approve pending requests, or delete student accounts.</p>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select id="student-filter-select" class="mono" style="padding:6px 12px; border-radius:6px; background:var(--bg-card); color:var(--text-main); border:1px solid var(--border-color);">
+            <option value="all" selected>All Students</option>
+            <option value="pending">Pending Approvals</option>
+            <option value="approved">Approved Students</option>
+          </select>
+          <button type="button" class="btn btn-ghost btn-inline" id="btn-refresh-students">Refresh ↻</button>
+        </div>
+      </div>
+      <div id="students-approval-list" class="dash-list"></div>
+    </section>
+
+    <!-- BANNED STUDENTS (VIOLATED) -->
+    <section id="panel-banned" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>🚫 Banned Students</h2>
+          <p>Students banned due to exam proctoring violations. Only <strong>Teacher approval</strong> can unban and allow a retake.</p>
+        </div>
+        <button type="button" class="btn btn-ghost btn-inline" id="btn-refresh-banned">Refresh ↻</button>
+      </div>
+      <div id="banned-students-list" class="dash-list">
+        <div class="dash-empty">Loading banned students…</div>
+      </div>
+    </section>
+
+    <!-- QUESTION BANK -->
+    <section id="panel-bank" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Question Bank</h2>
+          <p>Reusable MCQs. Create manually or bulk import from MS Word (.docx) documents.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-ghost btn-inline" id="btn-delete-all-q" style="color:var(--danger, #ff6b6b); border:1px solid rgba(255,107,107,0.3);">Delete All Questions 🗑</button>
+          <button type="button" class="btn btn-ghost btn-inline" id="btn-import-word">📄 Import MS Word (.docx)</button>
+          <button type="button" class="btn btn-primary btn-inline" id="btn-new-q">+ New Question</button>
+        </div>
+      </div>
+
+      <div id="word-import-wrap" class="dash-form-card" hidden>
+        <h3>MS Word (.docx) Question Importer</h3>
+        <p class="sub" style="margin-bottom:1rem; font-size:13px;">Upload a Word document containing MCQs. Format example:<br>
+        <code>Q1. What is HTML?<br>A) Language<br>B) Protocol<br>C) Styling<br>D) Database<br>Answer: A<br>Marks: 1</code></p>
+
+        <div class="field">
+          <label for="word-file-input">Select `.docx` file</label>
+          <input type="file" id="word-file-input" accept=".docx">
+        </div>
+
+        <div id="word-preview-section" hidden style="margin-top:1rem;">
+          <h4>Parsed Questions Preview (<span id="parsed-count">0</span> found)</h4>
+          <div id="word-parsed-list" style="max-height: 350px; overflow-y: auto; margin-bottom: 1rem; border: 1px solid var(--gold-dark); border-radius: 8px; padding: 12px; background: rgba(0,0,0,0.2);"></div>
+          <div class="dash-form-actions">
+            <button type="button" class="btn btn-ghost" id="btn-word-cancel">Cancel</button>
+            <button type="button" class="btn btn-primary btn-inline" id="btn-word-save-all">Save All to Question Bank</button>
+          </div>
+        </div>
+        <div id="word-import-error" class="form-error" hidden></div>
+      </div>
+
+      <div id="q-form-wrap" class="dash-form-card" hidden>
+        <h3 id="q-form-title">New Question</h3>
+        <input type="hidden" id="q-edit-id">
+        <div class="field">
+          <label for="q-text">Question</label>
+          <textarea id="q-text" rows="3" placeholder="Enter the question stem"></textarea>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Option A</label><input id="q-opt-0" type="text"></div>
+          <div class="field"><label>Option B</label><input id="q-opt-1" type="text"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Option C</label><input id="q-opt-2" type="text"></div>
+          <div class="field"><label>Option D</label><input id="q-opt-3" type="text"></div>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="q-correct">Correct option</label>
+            <select id="q-correct">
+              <option value="0">A</option>
+              <option value="1">B</option>
+              <option value="2">C</option>
+              <option value="3">D</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="q-topic">Topic / tag</label>
+            <input id="q-topic" type="text" placeholder="optional">
+          </div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="q-marks">Marks</label><input id="q-marks" type="number" value="1" min="0" step="0.5"></div>
+          <div class="field"><label for="q-neg">Negative marking</label><input id="q-neg" type="number" value="0" min="0" step="0.25"></div>
+        </div>
+        <div class="dash-form-actions">
+          <button type="button" class="btn btn-ghost" id="btn-q-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary btn-inline" id="btn-q-save">Save Question</button>
+        </div>
+        <div id="q-form-error" class="form-error" hidden></div>
+      </div>
+
+      <div id="bank-list" class="dash-list"></div>
+    </section>
+
+    <!-- EXAMS -->
+    <section id="panel-exams" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Exam Builder</h2>
+          <p>Assemble from the bank. Question set freezes after any student attempt.</p>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-ghost btn-inline" id="btn-delete-all-exams" style="color:var(--danger, #ff6b6b); border:1px solid rgba(255,107,107,0.3);">Delete All Exams 🗑</button>
+          <button type="button" class="btn btn-primary btn-inline" id="btn-new-exam">+ New Exam</button>
+        </div>
+      </div>
+
+      <div id="exam-form-wrap" class="dash-form-card" hidden>
+        <h3>Create Exam</h3>
+        <div class="row2">
+          <div class="field">
+            <label for="ex-code">Exam code</label>
+            <input id="ex-code" class="mono" type="text" placeholder="WDF-2026">
+          </div>
+          <div class="field">
+            <label for="ex-duration">Duration (minutes)</label>
+            <input id="ex-duration" type="number" value="15" min="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="ex-title">Title</label>
+          <input id="ex-title" type="text" placeholder="Web Development Fundamentals">
+        </div>
+        <div class="field">
+          <label>Select questions from bank</label>
+          <div id="ex-q-picker" class="q-picker"></div>
+        </div>
+        <div class="dash-form-actions">
+          <button type="button" class="btn btn-ghost" id="btn-ex-cancel">Cancel</button>
+          <button type="button" class="btn btn-primary btn-inline" id="btn-ex-save">Save as Draft</button>
+        </div>
+        <div id="ex-form-error" class="form-error" hidden></div>
+      </div>
+
+      <div id="exam-list" class="dash-list"></div>
+    </section>
+
+    <!-- RESULTS -->
+    <section id="panel-results" class="dash-panel">
+      <div class="dash-panel-head">
+        <div>
+          <h2>Results & Violations</h2>
+          <p>Attempts on your exams — scores and proctoring logs.</p>
+        </div>
+        <div class="field" style="margin:0;min-width:220px;">
+          <label for="results-exam">Exam</label>
+          <select id="results-exam"></select>
+        </div>
+      </div>
+      <div id="results-list" class="dash-list"></div>
+    </section>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="https://cdn.jsdelivr.net/npm/mammoth@1.6.0/mammoth.browser.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/teacher.js"></script>
+</body>
+</html>

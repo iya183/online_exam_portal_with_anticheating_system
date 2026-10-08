@@ -1,0 +1,8 @@
+{
+  "name": "securetest-portal",
+  "private": true,
+  "description": "SecureTest multi-role proctored exam portal (static frontend + Supabase)",
+  "scripts": {
+    "serve": "npx --yes serve -l 5173 ."
+  }
+}

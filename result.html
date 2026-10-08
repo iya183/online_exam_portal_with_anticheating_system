@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Examination Result</title>
+  <meta name="description" content="SecureTest Examination summary and proctoring log outcomes.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <main class="result-container">
+    <div class="result-card">
+      <header class="result-top">
+        <h1 class="status" id="res-status">Exam Submitted</h1>
+        <div class="sub" id="res-sub">SecureTest</div>
+      </header>
+      <div class="result-body">
+        <div class="score-row">
+          <div class="big" id="score-block"><span id="res-score">0</span><span id="res-max"> / —</span></div>
+          <div class="mono" id="res-name" style="color:var(--ink-soft); font-size:13px; text-align:right;">—</div>
+        </div>
+        <p class="permission-note" style="text-align:left;margin:-8px 0 18px;">Final score only. Answer key is not shown to candidates.</p>
+
+        <div class="stat-grid">
+          <section class="stat" aria-labelledby="label-time">
+            <div class="label" id="label-time">Time Taken</div>
+            <div class="val" id="res-time">—</div>
+          </section>
+          <section class="stat" aria-labelledby="label-violations">
+            <div class="label" id="label-violations">Violations Logged</div>
+            <div class="val" id="res-violations">0</div>
+          </section>
+        </div>
+
+        <div class="integrity-note clean" id="res-integrity">Session integrity: no violations recorded.</div>
+        <div id="lock-note" class="lock-banner" hidden style="margin-bottom:18px;">
+          <strong>🚫 Banned — Exam Access Locked.</strong>
+          <span>You have been banned from retaking this exam due to proctoring violations. You cannot retake until your <strong>Teacher</strong> approves your unban. Contact your teacher and ask them to approve your reinstatement via the Teacher Dashboard → Banned Students.</span>
+        </div>
+
+        <section class="verification-summary-box" id="res-photos-section" aria-labelledby="candidate-photo-title">
+          <h4 id="candidate-photo-title">Candidate Photo</h4>
+          <div class="verification-summary-photos" style="justify-content: center;">
+            <div class="summary-photo-item">
+              <span>Your Photo</span>
+              <img id="res-img-selfie" src="" alt="Candidate Photo" style="display:none;">
+              <div id="res-img-selfie-placeholder" style="width:100%; aspect-ratio:1; background:rgba(0,0,0,0.08); border-radius:6px; display:flex; align-items:center; justify-content:center; color:var(--ink-soft); font-size:12px;">No photo captured</div>
+            </div>
+          </div>
+        </section>
+
+        <section id="violation-details-panel" style="display: none; margin-bottom: 24px;">
+          <h4 style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--navy); margin: 0 0 10px;">Proctoring Incident Report</h4>
+          <div style="border: 1px solid var(--line); border-radius: 4px; overflow: hidden; background: #fff;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12.5px; text-align: left;" id="violations-table">
+              <thead>
+                <tr style="background: var(--paper-2); border-bottom: 1px solid var(--line); font-weight: 600;">
+                  <th style="padding: 8px 12px; color: var(--navy);">Time</th>
+                  <th style="padding: 8px 12px; color: var(--navy);">Incident</th>
+                  <th style="padding: 8px 12px; color: var(--navy);">Details</th>
+                </tr>
+              </thead>
+              <tbody id="violations-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <button class="btn btn-primary" style="width:100%;" id="btn-restart">Return to Portal</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="js/state.js"></script>
+  <script>
+    (function () {
+      guardPage(4);
+      const state = getState();
+
+      // Local escapeHtml since result.html doesn't load config.js
+      function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        return String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#039;');
+      }
+
+      document.getElementById('res-status').textContent = state.submitReason || 'Exam Submitted';
+      document.getElementById('res-sub').textContent =
+        'Online Exam Portal with Anti-Cheating System · ' + (state.examTitle || state.examCode || '');
+      document.getElementById('res-name').textContent = `${state.name}\nROLL: ${state.roll}`;
+      document.getElementById('res-score').textContent = state.score != null ? state.score : '—';
+      document.getElementById('res-max').textContent =
+        state.maxScore != null ? ' / ' + state.maxScore : '';
+
+      const em = Math.floor((state.elapsedSeconds || 0) / 60);
+      const es = (state.elapsedSeconds || 0) % 60;
+      document.getElementById('res-time').textContent = `${em}m ${es.toString().padStart(2, '0')}s`;
+
+      const vCount = (state.violations || []).length;
+      document.getElementById('res-violations').textContent = vCount;
+
+      const integrityEl = document.getElementById('res-integrity');
+      if (vCount === 0) {
+        integrityEl.className = 'integrity-note clean';
+        integrityEl.textContent = 'Session integrity: no violations recorded. Clean attempt.';
+      } else {
+        integrityEl.className = 'integrity-note flagged';
+        integrityEl.textContent = `Session integrity: ${vCount} violation(s) logged.`;
+      }
+
+      if (state.locked || vCount >= 3) {
+        document.getElementById('lock-note').hidden = false;
+      }
+
+      if (state.selfiePhoto) {
+        const selfieImg = document.getElementById('res-img-selfie');
+        const selfiePlaceholder = document.getElementById('res-img-selfie-placeholder');
+        selfieImg.src = state.selfiePhoto;
+        selfieImg.style.display = 'block';
+        if (selfiePlaceholder) selfiePlaceholder.style.display = 'none';
+      }
+
+      if (vCount > 0) {
+        document.getElementById('violation-details-panel').style.display = 'block';
+        const tbody = document.getElementById('violations-table-body');
+        state.violations.forEach((v) => {
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid var(--paper-2)';
+          tr.innerHTML = `
+            <td style="padding: 10px 12px; font-family: 'JetBrains Mono', monospace; font-size: 11px;">${new Date(v.time).toLocaleTimeString()}</td>
+            <td style="padding: 10px 12px; color: var(--red); font-weight: 600;">${escapeHtml(v.type)}</td>
+            <td style="padding: 10px 12px; color: var(--ink-soft);">${escapeHtml(v.message)}</td>`;
+          tbody.appendChild(tr);
+        });
+      }
+
+      document.getElementById('btn-restart').addEventListener('click', () => {
+        clearState();
+        window.location.href = 'index.html';
+      });
+    })();
+  </script>
+</body>
+</html>

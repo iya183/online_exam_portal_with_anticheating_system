@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Examination Rules & Consent</title>
+  <meta name="description" content="SecureTest Examination Rules and candidate proctoring consent form.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <main class="ticket-card" style="display: block;">
+    <header class="ticket-top">
+      <div>
+        <h1 class="brand" id="brand-title">Online Exam Portal<span> with Anti-Cheating System</span></h1>
+        <div class="tag">Rules & Consent</div>
+      </div>
+      <div id="candidate-meta" style="text-align:right; font-size:11px; color:var(--gold-light);" class="mono">
+        LOADING...
+      </div>
+    </header>
+    <div class="perforation"></div>
+    <div class="ticket-body">
+      <h2>Examination Rules & Integrity Agreement</h2>
+      <p class="sub">Please read the following guidelines carefully. You must accept all terms to begin the test.</p>
+
+      <div class="rules-box">
+        <h4>Proctoring Rules & System Audits</h4>
+        <ul>
+          <li><strong>Fullscreen Requirement:</strong> The exam will run in full-screen mode. Exiting fullscreen will trigger a proctoring violation.</li>
+          <li><strong>Tab/Window Monitoring:</strong> Navigating away from this tab, minimizing, or switching windows is strictly forbidden and logged.</li>
+          <li><strong>Input Restraints:</strong> Right-click context menus, copy, cut, and paste shortcuts are disabled for security.</li>
+          <li><strong>Webcam Feed:</strong> A live webcam preview will monitor your workspace. No videos are uploaded, this is a local simulation.</li>
+          <li><strong>Termination Threshold:</strong> Accumulating <strong>3 violations</strong> will auto-submit your exam and lock you out of retaking this exam until an administrator unlocks you.</li>
+        </ul>
+      </div>
+
+      <label class="consent">
+        <input type="checkbox" id="inp-consent">
+        <span>I understand that my exam session is actively proctored. I agree to abide by the rules above and proceed.</span>
+      </label>
+
+      <button class="btn btn-primary" id="btn-start" disabled>Enter Examination Hall →</button>
+      <div class="permission-note">You will enter fullscreen and activate proctoring tools upon starting.</div>
+    </div>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    (function() {
+      guardPage(2);
+      const state = getState();
+      if (state && state.examId && typeof checkStudentLock === 'function') {
+        checkStudentLock(state.examId).then((lock) => {
+          if (lock && lock.locked) {
+            state.locked = true;
+            saveState(state);
+            alert('⚠️ Account Banned / Locked: Admin approval is required before taking this exam.');
+            window.location.replace('index.html');
+          }
+        }).catch(() => {});
+      }
+
+      document.getElementById('candidate-meta').textContent = `${state.name} · ${state.roll}`;
+      if (state.examTitle) {
+        document.querySelector('.ticket-body h2').textContent =
+          state.examTitle + ' — Rules & Integrity Agreement';
+      }
+
+      const consentBox = document.getElementById('inp-consent');
+      const startBtn = document.getElementById('btn-start');
+
+      consentBox.addEventListener('change', () => {
+        startBtn.disabled = !consentBox.checked;
+      });
+
+      startBtn.addEventListener('click', () => {
+        if (!consentBox.checked) return;
+        state.consented = true;
+        saveState(state);
+        window.location.href = 'exam.html';
+      });
+    })();
+  </script>
+</body>
+</html>

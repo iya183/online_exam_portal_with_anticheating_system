@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Admin Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="portal-nav">
+    <a href="home.html">Home</a>
+    <a href="index.html" target="_blank">🎓 Student</a>
+    <a href="teacher-login.html" target="_blank">👨‍🏫 Teacher</a>
+    <a href="admin-login.html" class="active" target="_blank">🛡️ Admin</a>
+  </nav>
+
+  <main class="ticket-card" style="display:block;">
+    <header class="ticket-top">
+      <div>
+        <h1 class="brand">Online Exam Portal<span> with Anti-Cheating System</span></h1>
+        <div class="tag">Administration</div>
+      </div>
+      <div class="mono" style="text-align:right;font-size:11px;color:var(--gold-light);">CONTROL ROOM</div>
+    </header>
+    <div class="perforation"></div>
+    <div class="ticket-body">
+      <h2>Master Admin Sign In</h2>
+      <p class="sub">Platform oversight — unlock locked candidates, approve teachers, review violations and results.</p>
+
+      <form id="admin-form" onsubmit="return false;">
+        <div class="field">
+          <label for="inp-email">Admin Email</label>
+          <input type="email" id="inp-email" required placeholder="admin@examportal.local" value="admin@examportal.local">
+        </div>
+        <div class="field">
+          <label for="inp-password">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="inp-password" required minlength="6" placeholder="••••••••" style="padding-right:38px;">
+            <button type="button" id="btn-toggle-pass" title="Show / Hide Password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:14px; opacity:0.7; padding:0;">👁️</button>
+          </div>
+        </div>
+        <div id="form-error" class="form-error" hidden></div>
+        <button class="btn btn-primary" id="btn-go">Enter Control Room →</button>
+      </form>
+      <div class="permission-note">System Administrator Access Only. Public registration is disabled.</div>
+    </div>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      const errEl = document.getElementById('form-error');
+      const btn = document.getElementById('btn-go');
+      const emailInp = document.getElementById('inp-email');
+      const passInp = document.getElementById('inp-password');
+      const togglePassBtn = document.getElementById('btn-toggle-pass');
+
+      if (togglePassBtn && passInp) {
+        togglePassBtn.addEventListener('click', () => {
+          const isPass = passInp.getAttribute('type') === 'password';
+          passInp.setAttribute('type', isPass ? 'text' : 'password');
+          togglePassBtn.textContent = isPass ? '🙈' : '👁️';
+        });
+      }
+
+      (async () => {
+        try {
+          const p = await requireRole(['admin']);
+          if (p) {
+            const banner = document.createElement('div');
+            banner.className = 'session-banner';
+            banner.style.cssText = 'background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: var(--gold-light); padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;';
+            banner.innerHTML = `
+              <span>Active session: <strong>${escapeHtml(p.email)}</strong></span>
+              <div style="display:flex; gap:8px;">
+                <a href="admin.html" class="btn btn-primary btn-sm" style="padding:4px 10px; text-decoration:none;">Go to Control Room →</a>
+                <button type="button" id="btn-switch-account" class="btn btn-ghost btn-sm" style="padding:4px 10px; color:var(--danger, #ff6b6b);">Sign Out</button>
+              </div>
+            `;
+            const cardBody = document.querySelector('.ticket-body');
+            if (cardBody) {
+              cardBody.insertBefore(banner, cardBody.children[2] || cardBody.firstChild);
+            }
+
+            document.getElementById('btn-switch-account')?.addEventListener('click', async () => {
+              await signOut();
+              banner.remove();
+            });
+          }
+        } catch (_) {}
+      })();
+
+      btn.addEventListener('click', async () => {
+        errEl.hidden = true;
+        btn.disabled = true;
+        btn.textContent = 'Authenticating…';
+        try {
+          await signInStaff({
+            email: emailInp.value.trim(),
+            password: passInp.value,
+            expectedRole: 'admin',
+          });
+          window.location.href = 'admin.html';
+        } catch (e) {
+          errEl.hidden = false;
+          errEl.textContent = authErrorMessage(e);
+          btn.disabled = false;
+          btn.textContent = 'Enter Control Room →';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

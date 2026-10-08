@@ -1,0 +1,47 @@
+SecureTest — Quick Setup
+========================
+
+1. CREATE SUPABASE PROJECT
+   - Go to https://supabase.com/dashboard → New project
+
+2. RUN DATABASE SETUP & ENABLE DELETIONS
+   - Open SQL Editor in Supabase Dashboard → New query
+   - Paste entire contents of: supabase/setup-all.sql
+   - Click Run (wait for success)
+
+   If student deletion in Teacher/Admin dashboard returns a permission warning:
+   Paste and run this quick SQL fix in Supabase SQL Editor:
+
+   ALTER TABLE public.users DISABLE ROW LEVEL SECURITY;
+   GRANT ALL ON ALL TABLES IN SCHEMA public TO anon, authenticated, service_role;
+   GRANT ALL ON ALL FUNCTIONS IN SCHEMA public TO anon, authenticated, service_role;
+
+3. AUTH SETTINGS (for demos)
+   - Authentication → Providers → Email
+   - Turn OFF "Confirm email" so register works instantly
+
+4. CONFIGURE FRONTEND
+   - Dashboard → Project Settings → API
+   - Copy Project URL and anon public key
+   - Paste into js/config.js (replace YOUR_PROJECT_REF placeholders)
+
+5. START LOCAL SERVER
+   npm run serve
+   Open http://localhost:5173
+
+6. DEMO ACCOUNTS (register via UI)
+   Teacher: teacher-login.html → Register
+            email: teacher@demo.local  staff: TCH-001  password: demo1234
+   Admin:   admin-login.html → Register
+            email: admin@demo.local   staff: ADM-001  password: demo1234
+   Student: index.html → Register
+            name: Demo Student  register: 24131061  password: demo1234
+            exam code: WDF-2026
+
+7. OPTIONAL DEMO QUESTIONS
+   - After teacher registers, run supabase/migrations/005_demo_seed.sql
+     (edit teacher email in file if you used a different one)
+   - Or create questions manually in teacher dashboard
+
+Flow: Teacher publishes exam → Student logs in + exam code → verify → rules → exam → result
+      Admin unlocks locked students at admin.html

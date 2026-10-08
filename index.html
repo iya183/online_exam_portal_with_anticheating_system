@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Admit Card</title>
+  <meta name="description"
+    content="Online Exam Portal with Anti Cheating System. Student login with register number and exam code.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  </noscript>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <nav class="portal-nav">
+    <a href="home.html">Home</a>
+    <a href="index.html" class="active">🎓 Student</a>
+    <a href="teacher-login.html">👨‍🏫 Teacher</a>
+    <a href="admin-login.html">🛡️ Admin</a>
+  </nav>
+
+  <main id="screen-ticket" class="ticket-card" style="display: block;">
+    <header class="ticket-top">
+      <div>
+        <h1 class="brand">ONLINE EXAM PORTAL WITH ANTICHEATING SYSTEM<span></span></h1>
+        <div class="tag">Examination Admit Card</div>
+      </div>
+      <div style="text-align:right; font-size:11px; color:var(--gold-light);" class="mono">FORM NO.<br>ST-2026-0417
+      </div>
+    </header>
+    <div class="perforation"></div>
+    <div class="ticket-body">
+      <h2>Candidate Entry</h2>
+      <p class="sub">Sign in or Register with your candidate details and exam code to begin proctored verification.</p>
+
+      <div class="auth-tabs" role="tablist">
+        <button type="button" class="auth-tab active" data-tab="signin" id="tab-signin">Sign In</button>
+        <button type="button" class="auth-tab" data-tab="register" id="tab-register">Register</button>
+      </div>
+
+      <form id="login-form" onsubmit="return false;">
+        <div class="field" id="field-name" style="display:none;">
+          <label for="inp-name">Candidate Name</label>
+          <input type="text" id="inp-name" name="candidateName" placeholder="e.g. Iyappan M" autocomplete="name">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="inp-roll">Register Number</label>
+            <input type="text" id="inp-roll" name="rollNumber" placeholder="e.g. 24131061" autocomplete="username"
+              required>
+          </div>
+          <div class="field">
+            <label for="inp-password">Password</label>
+            <div style="position:relative;">
+              <input type="password" id="inp-password" name="password" placeholder="••••••••"
+                autocomplete="current-password" required style="padding-right:38px;">
+              <button type="button" id="btn-toggle-pass" title="Show / Hide Password"
+                style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:14px; opacity:0.7; padding:0;">👁️</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="inp-exam-code" id="lbl-exam-code">Exam Code</label>
+          <input type="text" id="inp-exam-code" name="examCode" placeholder="e.g. WDF-2026">
+        </div>
+
+        <div id="form-error" class="form-error" hidden></div>
+        <div id="lock-banner" class="lock-banner" hidden>
+          <strong>🚫 Banned from this Exam</strong>
+          <span id="lock-banner-msg">You have been banned from this exam due to proctoring violations. You cannot retake
+            this exam until your <strong>Teacher</strong> approves your unban. Please contact your teacher — they can
+            reinstate you via Teacher Dashboard → Banned Students.</span>
+        </div>
+
+        <div id="pending-banner" hidden style="
+          background: rgba(234,179,8,0.12);
+          border: 1px solid rgba(234,179,8,0.4);
+          border-radius: 8px;
+          padding: 14px 16px;
+          margin-bottom: 14px;
+          display: flex;
+          gap: 12px;
+          align-items: flex-start;
+        ">
+          <span style="font-size:1.5rem; flex-shrink:0;">⏳</span>
+          <div>
+            <strong style="display:block; color:#fde047; margin-bottom:4px;">Account Pending Approval</strong>
+            <span style="font-size:13px; color:var(--gold-light); line-height:1.5;">
+              Your registration is awaiting approval from your <strong>Teacher or Administrator</strong>.
+              You will be able to sign in and take exams once your account is approved.
+              <br><br>
+              📌 Please contact your teacher and ask them to approve your account via
+              <strong>Teacher Dashboard → Student Management → Pending Approvals</strong>.
+            </span>
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btn-proceed" disabled>Proceed to Verification →</button>
+      </form>
+      <div class="permission-note">Next step: ID-card and camera verification. Registered Gmail ID / identity verified
+        for exam access.</div>
+    </div>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script>
+    (function () {
+      clearState();
+
+      const nameInput = document.getElementById('inp-name');
+      const rollInput = document.getElementById('inp-roll');
+      const passInput = document.getElementById('inp-password');
+      const codeInput = document.getElementById('inp-exam-code');
+      const lblCode = document.getElementById('lbl-exam-code');
+      const togglePassBtn = document.getElementById('btn-toggle-pass');
+      const proceedBtn = document.getElementById('btn-proceed');
+      const fieldName = document.getElementById('field-name');
+      const formError = document.getElementById('form-error');
+      const lockBanner = document.getElementById('lock-banner');
+      let mode = 'signin';
+
+      if (togglePassBtn) {
+        togglePassBtn.addEventListener('click', () => {
+          const isPass = passInput.getAttribute('type') === 'password';
+          passInput.setAttribute('type', isPass ? 'text' : 'password');
+          togglePassBtn.textContent = isPass ? '🙈' : '👁️';
+        });
+      }
+
+      document.querySelectorAll('.auth-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          mode = tab.dataset.tab;
+          document.querySelectorAll('.auth-tab').forEach((t) => t.classList.toggle('active', t === tab));
+          fieldName.style.display = mode === 'register' ? 'block' : 'none';
+          nameInput.required = mode === 'register';
+          passInput.autocomplete = mode === 'register' ? 'new-password' : 'current-password';
+          lblCode.textContent = mode === 'register' ? 'Exam Code (Optional for Account Creation)' : 'Exam Code';
+          proceedBtn.textContent = mode === 'register'
+            ? 'Create Account & Continue →'
+            : 'Proceed to Verification →';
+          validateInputs();
+          hideError();
+        });
+      });
+
+      function validateInputs() {
+        const hasRoll = rollInput.value.trim().length > 0;
+        const hasPass = passInput.value.length >= 6;
+        const hasCode = mode === 'signin' ? codeInput.value.trim().length > 0 : true;
+        const hasName = mode === 'signin' || nameInput.value.trim().length > 0;
+        proceedBtn.disabled = !(hasRoll && hasPass && hasCode && hasName);
+      }
+
+      function showError(msg) {
+        formError.hidden = false;
+        formError.style.background = 'rgba(239, 68, 68, 0.1)';
+        formError.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+        formError.style.color = 'var(--danger, #ef4444)';
+        formError.textContent = msg;
+      }
+      function showSuccess(msg) {
+        formError.hidden = false;
+        formError.style.background = 'rgba(34, 197, 94, 0.12)';
+        formError.style.borderColor = 'rgba(34, 197, 94, 0.35)';
+        formError.style.color = '#15803d';
+        formError.textContent = msg;
+      }
+      const pendingBanner = document.getElementById('pending-banner');
+
+      function hideError() {
+        formError.hidden = true;
+        formError.textContent = '';
+        lockBanner.hidden = true;
+        pendingBanner.hidden = true;
+      }
+
+      [nameInput, rollInput, passInput, codeInput].forEach((el) => {
+        el.addEventListener('input', () => {
+          hideError();
+          validateInputs();
+        });
+      });
+
+      proceedBtn.addEventListener('click', async () => {
+        hideError();
+        const name = nameInput.value.trim();
+        const roll = rollInput.value.trim();
+        const password = passInput.value;
+        const code = codeInput.value.trim();
+
+        proceedBtn.disabled = true;
+        proceedBtn.textContent = 'Working…';
+
+        try {
+          let profile;
+          if (mode === 'register') {
+            await signUpStudent({ name, registerNumber: roll, password });
+            showSuccess('✅ Account registered! Your account is now PENDING approval. Please contact your Teacher or Administrator to approve your account before you can sign in.');
+            mode = 'signin';
+            document.querySelectorAll('.auth-tab').forEach((t) => t.classList.toggle('active', t.dataset.tab === 'signin'));
+            fieldName.style.display = 'none';
+            nameInput.required = false;
+            passInput.autocomplete = 'current-password';
+            lblCode.textContent = 'Exam Code';
+            proceedBtn.textContent = 'Proceed to Verification →';
+            proceedBtn.disabled = false;
+            validateInputs();
+            return;
+          } else {
+            const signed = await signInStudent({ registerNumber: roll, password });
+            profile = signed.profile;
+          }
+
+          const exam = await lookupPublishedExam(code);
+          const lock = await checkStudentLock(exam.id);
+          if (lock.locked) {
+            lockBanner.hidden = false;
+            showError('You are locked out of this exam pending admin unlock.');
+            proceedBtn.disabled = false;
+            proceedBtn.textContent = 'Proceed to Verification →';
+            return;
+          }
+
+          const questions = await fetchExamQuestions(exam.id);
+          if (!questions.length) {
+            throw new Error('This exam has no questions yet. Contact your teacher.');
+          }
+
+          initState({
+            name: profile.name,
+            roll: profile.register_number,
+            examCode: exam.exam_code,
+            examId: exam.id,
+            examTitle: exam.title,
+            durationMinutes: exam.duration_minutes,
+            questions,
+          });
+
+          window.location.href = 'verify.html';
+        } catch (err) {
+          const msg = err.message || String(err);
+          if (msg.includes('PENDING_APPROVAL')) {
+            pendingBanner.hidden = false;
+            formError.hidden = true;
+            proceedBtn.disabled = false;
+            proceedBtn.textContent = mode === 'register'
+              ? 'Create Account & Continue →'
+              : 'Proceed to Verification →';
+            return;
+          }
+          showError(authErrorMessage(err));
+          proceedBtn.disabled = false;
+          proceedBtn.textContent = mode === 'register'
+            ? 'Create Account & Continue →'
+            : 'Proceed to Verification →';
+        }
+      });
+    })();
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Teacher Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"></noscript>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <nav class="portal-nav">
+    <a href="home.html">Home</a>
+    <a href="index.html" target="_blank">🎓 Student</a>
+    <a href="teacher-login.html" class="active" target="_blank">👨‍🏫 Teacher</a>
+    <a href="admin-login.html" target="_blank">🛡️ Admin</a>
+  </nav>
+
+  <main class="ticket-card" style="display:block;">
+    <header class="ticket-top">
+      <div>
+        <h1 class="brand">ONLINE EXAM PORTAL WITH ANTI CHEATING SYSTEM<span></span></h1>
+        <div class="tag">Faculty Access</div>
+      </div>
+      <div class="mono" style="text-align:right;font-size:11px;color:var(--gold-light);">STAFF PORTAL</div>
+    </header>
+    <div class="perforation"></div>
+    <div class="ticket-body">
+      <h2>Teacher Sign In</h2>
+      <p class="sub">Manage your question bank, assemble exams, and review student results. Admin approval is required for teacher access.</p>
+
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" data-tab="signin">Sign In</button>
+        <button type="button" class="auth-tab" data-tab="register">Register</button>
+      </div>
+
+      <form id="staff-form" onsubmit="return false;">
+        <div class="field" id="field-name" style="display:none;">
+          <label for="inp-name">Full Name</label>
+          <input type="text" id="inp-name" placeholder="e.g. Dr. Priya S">
+        </div>
+        <div class="field" id="field-staff" style="display:none;">
+          <label for="inp-staff">Staff ID</label>
+          <input type="text" id="inp-staff" placeholder="e.g. TCH-1042" class="mono">
+        </div>
+        <div class="field">
+          <label for="inp-email">Email</label>
+          <input type="email" id="inp-email" required placeholder="you@college.edu" autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="inp-password">Password</label>
+          <div style="position:relative;">
+            <input type="password" id="inp-password" required minlength="6" placeholder="••••••••" style="padding-right:38px;">
+            <button type="button" id="btn-toggle-pass" title="Show / Hide Password" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:14px; opacity:0.7; padding:0;">👁️</button>
+          </div>
+        </div>
+        <div id="form-error" class="form-error" hidden></div>
+        <button class="btn btn-primary" id="btn-go">Enter Faculty Dashboard →</button>
+      </form>
+    </div>
+  </main>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script>
+    (function () {
+      const passInp = document.getElementById('inp-password');
+      const togglePassBtn = document.getElementById('btn-toggle-pass');
+      if (togglePassBtn && passInp) {
+        togglePassBtn.addEventListener('click', () => {
+          const isPass = passInp.getAttribute('type') === 'password';
+          passInp.setAttribute('type', isPass ? 'text' : 'password');
+          togglePassBtn.textContent = isPass ? '🙈' : '👁️';
+        });
+      }
+      let mode = 'signin';
+      const nameEl = document.getElementById('inp-name');
+      const staffEl = document.getElementById('inp-staff');
+      const emailEl = document.getElementById('inp-email');
+      const passEl = document.getElementById('inp-password');
+      const errEl = document.getElementById('form-error');
+      const btn = document.getElementById('btn-go');
+      const googleBtn = document.getElementById('btn-google-teacher');
+
+      if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+          try {
+            await signInWithGoogle('teacher');
+          } catch (err) {
+            errEl.hidden = false;
+            errEl.textContent = authErrorMessage(err);
+          }
+        });
+      }
+
+      document.querySelectorAll('.auth-tab').forEach((tab) => {
+        tab.addEventListener('click', () => {
+          mode = tab.dataset.tab;
+          document.querySelectorAll('.auth-tab').forEach((t) => t.classList.toggle('active', t === tab));
+          document.getElementById('field-name').style.display = mode === 'register' ? 'block' : 'none';
+          document.getElementById('field-staff').style.display = mode === 'register' ? 'block' : 'none';
+          btn.textContent = mode === 'register' ? 'Create Teacher Account →' : 'Enter Faculty Dashboard →';
+        });
+      });
+
+      // Parse URL search/hash errors (e.g. OAuth callbacks)
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const rawUrlErr = urlParams.get('error_description') || hashParams.get('error_description');
+      if (rawUrlErr) {
+        errEl.hidden = false;
+        errEl.textContent = 'Authentication error: ' + decodeURIComponent(rawUrlErr.replace(/\+/g, ' '));
+      }
+
+      // Display active session banner if signed in as teacher (no force auto-redirect)
+      (async () => {
+        try {
+          const p = await requireRole(['teacher']);
+          if (p) {
+            const banner = document.createElement('div');
+            banner.className = 'session-banner';
+            banner.style.cssText = 'background: rgba(234,179,8,0.15); border: 1px solid rgba(234,179,8,0.3); color: var(--gold-light); padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; font-size: 13px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;';
+            banner.innerHTML = `
+              <span>Active session: <strong>${escapeHtml(p.email)}</strong></span>
+              <div style="display:flex; gap:8px;">
+                <a href="teacher.html" class="btn btn-primary btn-sm" style="padding:4px 10px; text-decoration:none;">Go to Dashboard →</a>
+                <button type="button" id="btn-switch-account" class="btn btn-ghost btn-sm" style="padding:4px 10px; color:var(--danger, #ff6b6b);">Sign Out</button>
+              </div>
+            `;
+            const cardBody = document.querySelector('.ticket-body');
+            if (cardBody) {
+              cardBody.insertBefore(banner, cardBody.children[2] || cardBody.firstChild);
+            }
+
+            document.getElementById('btn-switch-account')?.addEventListener('click', async () => {
+              await signOut();
+              banner.remove();
+              emailEl.value = '';
+              passEl.value = '';
+            });
+          }
+        } catch (_) {}
+      })();
+
+      btn.addEventListener('click', async () => {
+        errEl.hidden = true;
+        btn.disabled = true;
+        try {
+          if (mode === 'register') {
+            await signUpStaff({
+              name: nameEl.value.trim(),
+              email: emailEl.value.trim(),
+              staffId: staffEl.value.trim(),
+              password: passEl.value,
+              role: 'teacher',
+            });
+            await signInStaff({
+              email: emailEl.value.trim(),
+              password: passEl.value,
+              expectedRole: 'teacher',
+            });
+          } else {
+            await signInStaff({
+              email: emailEl.value.trim(),
+              password: passEl.value,
+              expectedRole: 'teacher',
+            });
+          }
+
+          window.location.href = 'teacher.html';
+        } catch (e) {
+          errEl.hidden = false;
+          errEl.textContent = authErrorMessage(e);
+          btn.disabled = false;
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

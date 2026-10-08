@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Exam Portal with Anti Cheating System — Active Proctored Examination</title>
+  <meta name="description" content="SecureTest timed proctored exam environment. Monitoring is active.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============ LAUNCH / RESUME OVERLAY ============ -->
+  <div id="start-overlay" class="exam-start-overlay">
+    <div class="start-card" id="start-card-content">
+      <div class="brand">Online Exam Portal<span> with Anti-Cheating System</span></div>
+      <h3 id="start-title">Launch Examination Room</h3>
+      <p id="start-text">
+        Your verification is complete. Click below to initialize the proctored exam room. This will activate your camera monitoring feed, enter full-screen mode, and start the examination countdown timer.
+      </p>
+      <button class="btn btn-primary" id="btn-launch-room">Initialize Proctored Session →</button>
+    </div>
+  </div>
+
+  <!-- ============ EXAM INTERFACE SCREEN ============ -->
+  <main id="screen-exam" class="screen" style="display: none;">
+    <header class="exam-header">
+      <div class="left">
+        <div class="seal" id="seal" aria-label="Security Status Badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>
+          SECURE
+        </div>
+        <div class="candidate-block">
+          <div class="name" id="hdr-name">—</div>
+          <div class="roll mono" id="hdr-roll">—</div>
+        </div>
+      </div>
+      <div class="center">Web Development Fundamentals</div>
+      <div class="right">
+        <div class="timer mono" id="timer" aria-label="Remaining time timer">15:00</div>
+      </div>
+    </header>
+
+    <div class="exam-body">
+      <!-- Question Palette -->
+      <nav class="palette-panel" aria-label="Question Navigator">
+        <h4>Question Palette</h4>
+        <div class="palette-grid" id="palette"></div>
+        <div class="legend">
+          <span><span class="dot" style="background:var(--green);"></span> Answered</span>
+          <span><span class="dot" style="background:var(--gold);"></span> Flagged</span>
+          <span><span class="dot" style="background:var(--paper); border:1px solid var(--line);"></span> Unanswered</span>
+        </div>
+      </nav>
+
+      <!-- Active Question Card -->
+      <section class="qcard" aria-labelledby="q-index">
+        <div class="qmeta">
+          <h2 class="qnum mono" id="q-index">QUESTION 1 OF 5</h2>
+          <button class="flag-btn" id="btn-flag">🚩 Flag for review</button>
+        </div>
+        <p class="qtext" id="q-text">Loading question content...</p>
+        <div class="options" id="q-options" role="radiogroup" aria-label="Answer options"></div>
+        <div class="qnav">
+          <button class="btn btn-ghost" id="btn-prev">← Previous</button>
+          <button class="btn btn-ghost" id="btn-next">Next →</button>
+        </div>
+      </section>
+
+      <!-- Proctor Camera & Log Sidebar -->
+      <aside class="proctor-panel" aria-label="Proctor Logs">
+        <div class="cam-box" id="cam-box">
+          <div class="cam-off">Webcam preview loading...</div>
+          <canvas id="ai-webcam-canvas" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></canvas>
+        </div>
+        <div style="margin: 8px 0; text-align: center;">
+          <span id="ai-shield-badge" class="mono" style="font-size: 11px; font-weight: 700; padding: 4px 8px; border-radius: 4px; border: 1px solid var(--green, #10b981); color: var(--green, #10b981); background: rgba(16, 185, 129, 0.08); display: inline-block;">
+            AI Vision Shield: INITIALIZING
+          </span>
+        </div>
+        <div class="log-panel">
+          <h4>Proctor's Log <span class="count mono" id="log-count">0</span></h4>
+          <ul class="log-list" id="log-list">
+            <li class="log-empty">No violations recorded.</li>
+          </ul>
+        </div>
+      </aside>
+
+    </div>
+
+    <!-- Exam Submit Bar -->
+    <div class="submit-bar">
+      <button class="btn btn-danger" id="btn-submit">Submit Exam</button>
+    </div>
+  </main>
+
+  <!-- ============ PROCTORING VIOLATION MODAL ============ -->
+  <div class="overlay" id="overlay-violation" aria-hidden="true" role="dialog" aria-labelledby="modal-title" style="pointer-events: none;">
+    <div class="modal">
+      <div class="icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+      </div>
+      <h3 id="modal-title">Violation Detected</h3>
+      <p id="modal-text">Something suspicious was detected during your exam.</p>
+      <div class="count-badge mono" id="modal-count">Violation 1 of 3</div>
+      <button class="btn btn-primary" id="btn-modal-ok">Return to Exam</button>
+    </div>
+  </div>
+
+  <!-- LocalStorage mode: No Supabase SDK needed -->
+  <script src="js/config.js"></script>
+  <script src="js/supabase-client.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/timer.js"></script>
+  <script src="js/violations.js"></script>
+  <script src="js/exam.js"></script>
+</body>
+</html>
